@@ -1,0 +1,9 @@
+
+CREATE TABLE poi(id int, uid int, lat float, lon float);
+CREATE TABLE poi_tag(id int, key text, value text);
+
+.import poi.tsv poi
+.import poi_tag.tsv poi_tag
+
+UPDATE poi SET lat = (lat - 48.06) * 5291.005291;
+UPDATE poi SET lon = (lon - 11.358) * 2732.240437;
