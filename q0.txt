@@ -1,6 +1,9 @@
+sqlite3 assignment2.db
 
 CREATE TABLE poi(id int, uid int, lat float, lon float);
 CREATE TABLE poi_tag(id int, key text, value text);
+
+.seperator "\t"
 
 .import poi.tsv poi
 .import poi_tag.tsv poi_tag
