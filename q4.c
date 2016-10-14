@@ -29,12 +29,13 @@ int main(int argc, char ** argv) {
 								"SELECT id "
 								"FROM poiboxes b"
 								"WHERE b.minx >= ? AND "
-								"b.maxx <= ? AND "
-								"b.miny >= ? AND "
+								"b.miny <= ? AND "
+								"b.maxx >= ? AND "
 								"b.maxy <= ?) "
 							"SELECT id "
-							"FROM poi_tags p JOIN temp t on p.id = t.id "
-							"WHERE p.value = ?;";
+							"FROM poi_tag p JOIN temp t on p.id = t.id "
+							"WHERE p.key = 'class' AND "
+							"p.value = ?;";
 
 		rc = sqlite3_prepare_v2(db, sql_stmt, -1, &stmt, 0);
 		if (rc != SQLITE_OK) {
@@ -43,13 +44,13 @@ int main(int argc, char ** argv) {
 			return FAILURE;
 		}
 
-		for(i = 1; i < argc-1; i++) {
-			sqlite3_bind_double(stmt, i, argv[i]);
+		for(i = 1; i < argc; i++) {
+			sqlite3_bind_text(stmt, i, argv[i], -1, SQLITE_STATIC);
 		}
-		sqlite3_bind_text(stmt, i+1, argv[i+1]);
+		//sqlite3_bind_text(stmt, i+1, argv[i+1]);
 
-		while(sqlite3_step(stmt) == SQLITE3_ROW) {
-			printf("ID: %s\n", sqlite3_column_text(0));
+		while(sqlite3_step(stmt) == SQLITE_ROW) {
+			printf("ID: %s\n", sqlite3_column_text(stmt, 0));
 		}
 
 		sqlite3_finalize(stmt);
