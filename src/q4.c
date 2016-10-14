@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "sqlite3.h"
+#include "../sqlite3.h"
 
 /* Define Statements */
 #define SUCCESS 0
@@ -13,26 +13,27 @@ int main(int argc, char ** argv) {
 
 		int rc;
 		int i;
+		char *ptr;
 
 		if(argc != 6) {
 			fprintf(stderr, "Usage: %s x1, y1, x2, y2, POI_Class\n", argv[0]);
 			return FAILURE;
 		}
 
-		rc = sqlite3_open("assignment2.db", &db);
+		rc = sqlite3_open("../assignment2.db", &db);
 		if( rc ) {
 			fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
 			return FAILURE;
 		}
 
 		char *sql_stmt = 	"WITH temp(id) AS ( "
-								"SELECT id "
-								"FROM poiboxes b"
+								"SELECT b.id "
+								"FROM poiboxes b "
 								"WHERE b.minx >= ? AND "
-								"b.miny <= ? AND "
-								"b.maxx >= ? AND "
+								"b.miny >= ? AND "
+								"b.maxx <= ? AND "
 								"b.maxy <= ?) "
-							"SELECT id "
+							"SELECT p.id "
 							"FROM poi_tag p JOIN temp t on p.id = t.id "
 							"WHERE p.key = 'class' AND "
 							"p.value = ?;";
@@ -44,10 +45,11 @@ int main(int argc, char ** argv) {
 			return FAILURE;
 		}
 
-		for(i = 1; i < argc; i++) {
-			sqlite3_bind_text(stmt, i, argv[i], -1, SQLITE_STATIC);
+		for(i = 1; i < argc-1; i++) {
+			sqlite3_bind_double(stmt, i, strtod(argv[i], &ptr));
 		}
-		//sqlite3_bind_text(stmt, i+1, argv[i+1]);
+
+		sqlite3_bind_text(stmt, i, argv[i], -1, SQLITE_STATIC);
 
 		while(sqlite3_step(stmt) == SQLITE_ROW) {
 			printf("ID: %s\n", sqlite3_column_text(stmt, 0));
