@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 #include <math.h>
 #include <unistd.h>
 #include "../sqlite3.h"
