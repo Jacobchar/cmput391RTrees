@@ -123,7 +123,9 @@ int main(int argc, char ** argv) {
 	// Calculate our average time for querying the R-tree
 	rtree_runtime = runtime_avg(runtimes);
 
-	printf("The total avg runtime is: %ld ms\n", rtree_runtime);
+	printf("Parameter l: %s\n", argv[1]);
+	printf("Average runtime with r-tree: %ld ms\n", rtree_runtime);
+	printf("Average runtime without r-tree: %ld ms\n", nortree_runtime);
 
 	sqlite3_finalize(stmt);
 	free(query_time);
