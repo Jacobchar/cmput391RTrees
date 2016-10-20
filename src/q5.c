@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <sys/time.h>
-
 #include <unistd.h>
+#include "../sqlite3.h"
+
+/* Define Statements */
+#define SUCCESS 0
+#define FAILURE 1
 
 typedef struct {
 	double x1, y1, x2, y2;
@@ -46,13 +49,34 @@ long querytime_avg(long *times) {
 
 int main(int argc, char ** argv) {
 
-	//sqlite3 *db;
-	//sqlite3_stmt *stmt;
-
 	if (argc != 2) {
 	  fprintf(stderr, "Usage: %s <length> \n", argv[0]);
 	  return(1);
 	} 
+
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+
+	int rc;
+
+	rc = sqlite3_open("../assignment2.db", &db);
+	if( rc ) {
+		fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+		return FAILURE;
+	}
+
+	char *sql_stmt = "SELECT * FROM poiboxes "
+					 "WHERE minx >= ? "
+					 "AND miny >= ?"
+					 "AND maxx <= ?"
+					 "AND maxy <= ?";
+
+	rc = sqlite3_prepare_v2(db, sql_stmt, -1, &stmt, 0);
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "Preparation failed: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		return FAILURE;
+	}
 
 	box *boxes = malloc(100*sizeof(box));
 	long *query_time = malloc(100*sizeof(long));
@@ -62,21 +86,45 @@ int main(int argc, char ** argv) {
 
 // Query with R-Tree
 	for(int i = 0; i < 20; i ++) {
+		
 		generate_boxes(atoi(argv[1]), boxes);
-		for(int j = 0; j < 100; j ++) {
+
+		for(int j = 0; j < 100; j ++) {		
+			
+			// Bind our wildcards
+			sqlite3_bind_double(stmt, 1, boxes[j].x1);
+			sqlite3_bind_double(stmt, 2, boxes[j].y1);
+			sqlite3_bind_double(stmt, 3, boxes[j].x2);
+			sqlite3_bind_double(stmt, 4, boxes[j].y2);
+
+			// Start timer
 			gettimeofday(&start, NULL);
+			
 			//run query
+			while(sqlite3_step(stmt) == SQLITE_ROW) {}
 
-
+			// End time, determine time to query 100 boxes
 			gettimeofday(&end, NULL);
 			query_time[j] = (end.tv_usec - start.tv_usec)/1000;
+
+			// Clear Bindings
+			rc = sqlite3_clear_bindings(stmt);
+			if (rc != SQLITE_OK) {
+				fprintf(stderr, "Could not clear bindings: %s\n", sqlite3_errmsg(db));
+				return FAILURE;
+			}
 		}
+		// For our 20 trials store the time for querying
 		rtree_runtime = querytime_avg(query_time);
 		runtimes[i] = rtree_runtime;
 	}
+
+	// Calculate our average time for querying the R-tree
 	rtree_runtime = runtime_avg(runtimes);
 
 	printf("The total avg runtime is: %ld ms\n", rtree_runtime);
+
+	sqlite3_finalize(stmt);
 	free(query_time);
 	free(runtimes);
 	free(boxes);
