@@ -35,4 +35,4 @@ SELECT * FROM q3_rowid;
 SELECT * FROM q3_node;
 1|
 
-As we can see from the outputs of our SQLite commands all of the objects are in row one of the first node of our tree. This is different than the one we created because sqlite is not limited by M=4 and m=2.
+As we can see from the outputs of our SQLite commands all of the objects are in row one of the first node of our tree. This is different than the one we created because sqlite is not limited by M=4 and m=2. The parameters of R-tree's in sqlite are incredibly difficult (or impossible) to change.
