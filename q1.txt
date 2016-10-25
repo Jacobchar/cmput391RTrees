@@ -1,6 +1,6 @@
 CREATE VIRTUAL TABLE poiboxes USING rtree(id, minx, maxx, miny, maxy);
 
 INSERT INTO poiboxes (id, minx, maxx, miny, maxy) 
-SELECT id, (lat-0.002378686), (lat+0.002378686), 
-(lon-0.001838235),(lon+0.001838235) 
+SELECT id, (lat-0.0002392504594), (lat+0.0002392504594), 
+(lon-0.0001227392721),(lon+0.0001227392721) 
 FROM poi;
