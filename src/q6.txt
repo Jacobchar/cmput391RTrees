@@ -1,0 +1,8 @@
+Length |  R-Tree Query Time | Index Query Time
+25     |
+50     |
+75     |
+100    |
+125    |
+
+From the above data we can see that our ______ runs faster than our _____. These values are as expected because ______

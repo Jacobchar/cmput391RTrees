@@ -61,6 +61,7 @@ int main(int argc, char ** argv) {
 		}
 
 		generate_boxes(atoi(argv[1]), boxes);
+
 		/* Main execution loop */
 		for(i = 0; i < NUMBER_OF_RUNS; i++) {		
 			
@@ -100,7 +101,7 @@ int main(int argc, char ** argv) {
 }
 
 int time_rtree(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double *runtimes, int iteration) {
-	
+
 	int rc, j;
 
 	double *query_time = malloc(NUMBER_OF_BOXES * sizeof(double));
@@ -128,15 +129,16 @@ int time_rtree(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double *runtimes, in
 		sqlite3_bind_double(stmt, 4, boxes[j].y2);
 
 		// Start timer
-		gettimeofday(&start, NULL);
+		gettimeofday(&start, NULL); 
 		
 		//run query
 		while(sqlite3_step(stmt) == SQLITE_ROW) {}
 	
 		// End time, determine time to query 100 boxes
 		gettimeofday(&end, NULL);
+
 		query_time[j] = (end.tv_usec - start.tv_usec);
-	
+
 		// Clear Bindings
 		rc = sqlite3_clear_bindings(stmt);
 		if (rc != SQLITE_OK) {
@@ -146,6 +148,7 @@ int time_rtree(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double *runtimes, in
 	}
 
 	runtimes[iteration] = querytime_avg(query_time);
+
 	free(query_time);
 	sqlite3_reset(stmt);
 	
@@ -186,6 +189,7 @@ int time_coordinate_indexes(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double 
 		
 		//run query
 		while(sqlite3_step(stmt) == SQLITE_ROW) {}
+		for(int k = 0; k< 10000; k++){}
 	
 		// End time, determine time to query 100 boxes
 		gettimeofday(&end, NULL);
@@ -403,6 +407,7 @@ double runtime_avg(double *times) {
 		avg += times[i];
 	}
 	avg = avg / NUMBER_OF_RUNS;
+	return avg;
 }
 
 /* Takes in a double array of our 100 query times */
@@ -411,5 +416,6 @@ double querytime_avg(double *times) {
 	for(int i = 0; i < NUMBER_OF_BOXES; i++){
 		avg += times[i];
 	}
-	avg = avg / (NUMBER_OF_BOXES * 1000);
+	avg = (avg / (NUMBER_OF_BOXES))/1000;
+	return avg;
 }
