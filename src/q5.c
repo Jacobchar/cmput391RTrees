@@ -106,7 +106,7 @@ int time_rtree(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double *runtimes, in
 	double *query_time = malloc(NUMBER_OF_BOXES * sizeof(double));
 
 	char *sql_stmt = 	"SELECT * "
-						"FROM poiboxes "
+						"FROM poibox "
 					 	"WHERE minx >= ? "
 					 	"AND miny >= ?"
 					 	"AND maxx <= ?"
@@ -135,7 +135,7 @@ int time_rtree(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double *runtimes, in
 	
 		// End time, determine time to query 100 boxes
 		gettimeofday(&end, NULL);
-		query_time[j] = (end.tv_usec - start.tv_usec);
+		query_time[j] = (end.tv_sec*1e6 + end.tv_usec) - (start.tv_sec*1e6 + start.tv_usec);
 	
 		// Clear Bindings
 		rc = sqlite3_clear_bindings(stmt);
@@ -190,7 +190,7 @@ int time_coordinate_indexes(sqlite3 *db, sqlite3_stmt *stmt, box *boxes, double 
 		// End time, determine time to query 100 boxes
 		gettimeofday(&end, NULL);
 
-		query_time[j] = (end.tv_usec - start.tv_usec);
+		query_time[j] = (end.tv_sec*1e6 + end.tv_usec) - (start.tv_sec*1e6 + start.tv_usec);
 		
 		// Clear Bindings
 		rc = sqlite3_clear_bindings(stmt);
