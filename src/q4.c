@@ -28,7 +28,7 @@ int main(int argc, char ** argv) {
 
 		char *sql_stmt = 	"WITH temp(id) AS ( "
 								"SELECT b.id "
-								"FROM poiboxes b "
+								"FROM poibox b "
 								"WHERE b.minx >= ? AND "
 								"b.miny >= ? AND "
 								"b.maxx <= ? AND "
