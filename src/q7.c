@@ -23,11 +23,6 @@
 #define FAILURE 1
 #define ROOT 1
 
-/* Function Prototypes */
-void ParseAndStoreBLOB(char *);
-int getBLOBData(sqlite3 *, sqlite3_stmt *, int);
-int getDepth(sqlite3 *, sqlite3_stmt *, int *);
-
 /* Structure Declarations */
 typedef struct {
 	int id;
@@ -37,11 +32,23 @@ typedef struct {
 	double maxy;
 } NodeStuff; 
 
+typedef struct {
+	int id;
+	double minDist;
+	double minMaxDist;
+} currentNearest;
+
+/* Function Prototypes */
+void ParseAndStoreBLOB(char *);
+int getBLOBData(sqlite3 *, sqlite3_stmt *, int);
+int getDepth(sqlite3 *, sqlite3_stmt *, int *);
+void getDistances(NodeStuff, double, double);
 
 /* Global Variables */
-int rtreedepth;
+int rtreeDepth;
 int nodecount = 0;
 NodeStuff ActiveBranchList[50000];
+currentNearest curNear;
 
 
 int main(int argc, char **argv) {
@@ -77,9 +84,11 @@ int main(int argc, char **argv) {
 			return FAILURE;
 		}
 
+		getDistances(ActiveBranchList[0], atof(argv[1]), atof(argv[2]));
+		printf("id: %d minDist: %lf minMaxDist: %lf\n", curNear.id, curNear.minDist, curNear.minMaxDist);
 
 
-	return 0;
+	return SUCCESS;
 }
 
 int getBLOBData(sqlite3 *db, sqlite3_stmt *stmt, int nodeno) {
@@ -125,11 +134,6 @@ void ParseAndStoreBLOB(char *BLOB) {
 			break;
 		}
 	 }
-	
-	 int i;
-	for(i = 0; i < nodecount; i++) {
-		printf("%d, %f, %f, %f, %f \n", ActiveBranchList[i].id,ActiveBranchList[i].minx,ActiveBranchList[i].maxx,ActiveBranchList[i].miny,ActiveBranchList[i].maxy);
-	}
 }
 
 int getDepth(sqlite3 *db, sqlite3_stmt *stmt, int *depth) {
@@ -149,6 +153,63 @@ int getDepth(sqlite3 *db, sqlite3_stmt *stmt, int *depth) {
 		*depth = sqlite3_column_int(stmt, 0);
 	}
 	
-	sqlite3_reset(stmt)) 
+	sqlite3_reset(stmt);
 	return SUCCESS;
 }
+
+void getDistances(NodeStuff node, double x, double y) {
+	
+	double minDist = INFINITY;
+	//double minMaxDist = INFINITY;
+	double tempx, tempy;
+
+	/* Find if our point is closer to minx or maxx */
+	if (abs(x - node.minx) < abs(x - node.maxx)) {
+		tempx = (x - node.minx);
+		printf("here\n");
+	} else {
+		tempx = (x - node.maxx);
+	}
+
+	/* Find if our point is closer to miny or maxy */
+	if (abs(y - node.miny) < abs(y - node.maxy)) {
+		tempy = (y - node.miny);
+	} else {
+		tempy = (y - node.maxy);
+	}
+
+	/* Check to see if our point is in out MBR */
+	if (((x <= node.maxx) && (x >= node.minx)) && ((y <= node.maxy) && (y >= node.miny))) {
+		tempx = 0;
+		tempy = 0;
+		printf("never here\n");
+
+	} 
+
+	// MinDist calculations given our node and x1, y1 from input
+	minDist = pow(tempx, 2) + pow (tempy, 2);
+
+
+	// MinMaxDist calculations given our node and x1, y1 from input
+
+
+
+
+
+	curNear.id = node.id;
+	curNear.minDist = minDist;
+	///curNear.minMaxDist = minMaxDist;
+
+}
+
+
+/*
+currentNearest getMinMaxDist(NodeStuff *node, double x, double y) {
+	double minMaxDist = INFINITY;
+
+	// MinMaxDist calculations given our node and x1, y1 from input
+	curNear.id = node.id
+
+	return minMaxDist;	
+}
+*/
