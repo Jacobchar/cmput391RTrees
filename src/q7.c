@@ -43,6 +43,7 @@ void ParseAndStoreBLOB(char *);
 int getBLOBData(sqlite3 *, sqlite3_stmt *, int);
 int getDepth(sqlite3 *, sqlite3_stmt *, int *);
 void getDistances(NodeStuff, double, double);
+int cmpfunc (const void *, const void *);
 
 /* Global Variables */
 int rtreeDepth;
@@ -84,6 +85,8 @@ int main(int argc, char **argv) {
 			return FAILURE;
 		}
 
+		// Sample call of function to get mindist and minmaxdist and store it in our
+		// currentNearest structure
 		getDistances(ActiveBranchList[0], atof(argv[1]), atof(argv[2]));
 		printf("id: %d minDist: %lf minMaxDist: %lf\n", curNear.id, curNear.minDist, curNear.minMaxDist);
 
@@ -160,56 +163,53 @@ int getDepth(sqlite3 *db, sqlite3_stmt *stmt, int *depth) {
 void getDistances(NodeStuff node, double x, double y) {
 	
 	double minDist = INFINITY;
-	//double minMaxDist = INFINITY;
-	double tempx, tempy;
+	double minMaxDist = INFINITY;
+	/* Used as temp values to find mindist */
+	double minx, miny;
+	/* Distances from point to vertex */
+	double vertex1, vertex2, vertex3, vertex4;
 
 	/* Find if our point is closer to minx or maxx */
 	if (abs(x - node.minx) < abs(x - node.maxx)) {
-		tempx = (x - node.minx);
-		printf("here\n");
+		minx = (x - node.minx);
 	} else {
-		tempx = (x - node.maxx);
+		minx = (x - node.maxx);
 	}
 
 	/* Find if our point is closer to miny or maxy */
 	if (abs(y - node.miny) < abs(y - node.maxy)) {
-		tempy = (y - node.miny);
+		miny = (y - node.miny);
 	} else {
-		tempy = (y - node.maxy);
+		miny = (y - node.maxy);
 	}
 
 	/* Check to see if our point is in out MBR */
 	if (((x <= node.maxx) && (x >= node.minx)) && ((y <= node.maxy) && (y >= node.miny))) {
-		tempx = 0;
-		tempy = 0;
-		printf("never here\n");
-
+		minx = 0;
+		miny = 0;
 	} 
 
-	// MinDist calculations given our node and x1, y1 from input
-	minDist = pow(tempx, 2) + pow (tempy, 2);
+	/* MinDist calculations given our node and x1, y1 from input */
+	minDist = pow(minx, 2) + pow(miny, 2);
 
+	/* After extensive testing MinMaxDist will always be the second closest vertice of the MBR*/
+	vertex1 = pow((x - node.minx), 2) + pow((y - node.miny), 2);
+	vertex2 = pow((x - node.minx), 2) + pow((y - node.maxy), 2);
+	vertex3 = pow((x - node.maxx), 2) + pow((y - node.maxy), 2);
+	vertex4 = pow((x - node.maxx), 2) + pow((y - node.miny), 2);
 
-	// MinMaxDist calculations given our node and x1, y1 from input
+	double vertices[] = {vertex1, vertex2, vertex3, vertex4};
+	qsort(vertices, 4, sizeof(double), cmpfunc);
 
-
-
-
+	minMaxDist = vertices[1];
 
 	curNear.id = node.id;
 	curNear.minDist = minDist;
-	///curNear.minMaxDist = minMaxDist;
+	curNear.minMaxDist = minMaxDist;
 
 }
 
-
-/*
-currentNearest getMinMaxDist(NodeStuff *node, double x, double y) {
-	double minMaxDist = INFINITY;
-
-	// MinMaxDist calculations given our node and x1, y1 from input
-	curNear.id = node.id
-
-	return minMaxDist;	
+int cmpfunc (const void * a, const void * b)
+{
+   return ( *(double*)a - *(double*)b );
 }
-*/
