@@ -1,0 +1,15 @@
+sqlite3 assignment2.db
+
+CREATE TABLE poi(id int, uid int, lat float, lon float);
+CREATE TABLE poi_tag(id int, key text, value text);
+
+.separator "\t"
+
+.import poi.tsv poi
+.import poi_tag.tsv poi_tag
+
+CREATE TABLE poi2(id int, uid int, minx float, maxx float, miny float, maxy float);
+
+INSERT INTO poi2(id, uid, minx, maxx, miny, maxy)
+SELECT id, uid, (((lat - 48.06) * 5291.005291)-0.2376506), (((lat - 48.06) * 5291.005291)+0.2376506), (((lon - 11.358) * 2732.240437)-0.1227212), (((lon - 11.358) * 2732.240437)+0.1227212)
+FROM poi;

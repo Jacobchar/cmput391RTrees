@@ -1,0 +1,5 @@
+CREATE VIRTUAL TABLE poibox USING rtree(id, minx, maxx, miny, maxy);
+
+INSERT INTO poibox (id, minx, maxx, miny, maxy) 
+SELECT id, minx, maxx, miny, maxy 
+FROM poi2;
